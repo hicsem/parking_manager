@@ -32,19 +32,24 @@ NODE_ENV=(ex:development)
 
 #### user
 
-- GET `api/users` (returns a list of users)
-- POST `api/users` (create a user)
-- GET `api/users/:userId` (returns a user)
-- PUT `api/users/:userId` (update a user)
-- DELETE `api/users/:userId` (delete a user)
+- GET `/api/users` (returns a list of users)
+- POST `/api/users` (create a user or register)
+- GET `/api/users/:userId` (returns a user)
+- PUT `/api/users/:userId` (update a user)
+- DELETE `/api/users/:userId` (delete a user)
+
+#### auth
+
+- POST `/auth/signin` (sign in or login)
+- GET `/auth/signout` (sign out)
 
 #### parking
 
-- GET `api/parkings` (returns a list of parking spaces)
-- POST `api/parkings` (create a parking space)
-- GET `api/parkings/:parkingId` (returns a parking space)
-- PUT `api/parkings/:parkingId` (update a parking space)
-- DELETE `api/parkings/:parkingId` (delete a parking space)
+- GET `/api/parking` (returns a list of parking spaces)
+- POST `/api/parking` (create a parking space)
+- GET `/api/parking/:parkingId` (returns a parking space)
+- PUT `/api/parking/:parkingId` (update a parking space)
+- DELETE `/api/parking/:parkingId` (delete a parking space)
 
 - PUT `/api/modifyparking/:parkingId` (update a parking space by the user)
 - GET `/api/freeparking` (returns a list of available parking spaces (if the floor is specified in the body of the request, it returns the list of available spaces in that floor))
