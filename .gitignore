@@ -1,0 +1,9 @@
+
+# dependencies
+/node_modules
+
+#migrations
+/migrations
+
+# misc
+.env
