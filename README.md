@@ -14,7 +14,7 @@ This is the backend of a parking management system.
 ## Basic Setup :
 
 - run `npm install` or `yarn`
-- create a `.env` file in the root folder and add the following lines():
+- create a `.env` file in the root folder and add the following lines:
 
 ```
 DB_USERNAME=your_database_username
