@@ -1,5 +1,4 @@
 const { Booking } = require("../models")
-const extend = require("lodash/extend")
 
 const bookParkingSpace = async (req, res) => {
   try {
@@ -37,14 +36,14 @@ const bookingById = async (req, res, next, id) => {
   try {
     let booking = await Booking.findByPk(id)
     if (!booking) {
-      return res.status("400").json({
+      return res.status(400).json({
         error: "Booking not found",
       })
     }
     req.booking = booking
     next()
   } catch (err) {
-    return res.status("400").json({
+    return res.status(400).json({
       error: "Could not retrieve the booking",
     })
   }

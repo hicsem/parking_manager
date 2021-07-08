@@ -12,8 +12,12 @@ router
   .post(authCtrl.requireSignin, bookingCtrl.bookParkingSpace)
 
 router
-  .route("/api/parking/bookings/:bookingId")
-  .get(authCtrl.requireSignin, bookingCtrl.getBooking)
+  .route("/api/parking/bookings/:bookingId/:userId")
+  .get(
+    authCtrl.requireSignin,
+    authCtrl.hasAuthorization,
+    bookingCtrl.getBooking
+  )
   .delete(
     authCtrl.requireSignin,
     authCtrl.hasAuthorization,

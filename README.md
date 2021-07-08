@@ -59,5 +59,5 @@ NODE_ENV=(ex:development)
 - GET `/api/parking/:parkingId/bookings` (returns a list of bookings of a parking space)
 - POST `/api/parking/:parkingId/bookings` (books a parking space)
 
-- GET `/api/parking/bookings/:bookingId` (return a booking by Id)
-- DELETE `/api/parking/bookings/:bookingId` (delete a booking)
+- GET `/api/parking/bookings/:bookingId/:userId` (return a booking by Id)
+- DELETE `/api/parking/bookings/:bookingId/:userId` (delete a booking)
