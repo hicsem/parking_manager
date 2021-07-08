@@ -12,11 +12,19 @@ router
     authCtrl.hasAdminRights,
     parkingCtrl.createParkingSpace
   )
-  .get(authCtrl.requireSignin, parkingCtrl.listParkingSpaces)
+  .get(
+    authCtrl.requireSignin,
+    parkingCtrl.updateParkingSpacesAvailability,
+    parkingCtrl.listParkingSpaces
+  )
 
 router
   .route("/api/parking/:parkingId")
-  .get(authCtrl.requireSignin, parkingCtrl.getParkingSpace)
+  .get(
+    authCtrl.requireSignin,
+    parkingCtrl.updateParkingSpacesAvailability,
+    parkingCtrl.getParkingSpace
+  )
   .put(
     authCtrl.requireSignin,
     authCtrl.hasAdminRights,
@@ -29,12 +37,12 @@ router
   )
 
 router
-  .route("/api/modifyparking/:parkingId")
-  .put(authCtrl.requireSignin, parkingCtrl.updateParkingSpaceByUser)
-
-router
-  .route("/api/freeparking")
-  .get(authCtrl.requireSignin, parkingCtrl.ListFreeSpaces)
+  .route("/api/availableparkingspaces")
+  .get(
+    authCtrl.requireSignin,
+    parkingCtrl.updateParkingSpacesAvailability,
+    parkingCtrl.ListAvailableSpaces
+  )
 
 router
   .route("/api/myparkingspace/:userId")

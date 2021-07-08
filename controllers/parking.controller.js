@@ -1,14 +1,12 @@
-const { Parking } = require("../models")
+const { Parking, Booking } = require("../models")
+const { Op } = require("sequelize")
 const extend = require("lodash/extend")
-// const { User } = require("../models")
 
 const createParkingSpace = async (req, res) => {
   try {
     let space = Parking.build({
       number: req.body.number,
       floor: req.body.floor,
-      available: req.body.available,
-      UserId: req.body.UserId,
     })
     await space.save()
     return res.status(200).json({
@@ -19,25 +17,61 @@ const createParkingSpace = async (req, res) => {
   }
 }
 
-const listParkingSpaces = async (req, res) => {
+const updateParkingSpacesAvailability = async (req, res, next) => {
+  const now = new Date()
+  // const now = "2021-07-08T02:30:00.000Z"
   try {
-    let spaces = await Parking.findAll({
-      attributes: ["number", "floor", "available"],
+    let bookedSpaces = await Booking.findAll({
+      where: {
+        from: { [Op.lt]: now },
+        to: { [Op.gt]: now },
+      },
     })
-    return res.status(200).json(spaces)
+    const bookedSpacesIds = bookedSpaces.map(
+      (space) => space.dataValues.ParkingId
+    )
+
+    let spaces = await Parking.findAll({
+      attributes: ["id", "number", "floor", "available"],
+    })
+
+    for (i = 0; i < spaces.length; i++) {
+      if (bookedSpacesIds.includes(spaces[i].id)) {
+        spaces[i].available = false
+        await spaces[i].save()
+      } else {
+        spaces[i].available = true
+        await spaces[i].save()
+      }
+    }
+    spaces = spaces.map((space) => {
+      return {
+        number: space.number,
+        floor: space.floor,
+        available: space.available,
+      }
+    })
+    req.allParkingSpaces = spaces
+    next()
   } catch (err) {
     return res.status(400).json(err)
   }
 }
 
+const listParkingSpaces = async (req, res) => {
+  return res.status(200).json(req.allParkingSpaces)
+}
+
 const parkingByID = async (req, res, next, id) => {
   try {
+    await updateParkingSpacesAvailability(req, res, next)
     let space = await Parking.findByPk(id)
     if (!space) {
-      return res.status("400").json({
+      return res.status(400).json({
         error: "Parking space not found",
       })
     }
+
     req.parkingSpace = space
     next()
   } catch (err) {
@@ -58,14 +92,17 @@ const getParkingSpace = async (req, res) => {
 const updateParkingSpace = async (req, res) => {
   try {
     let space = req.parkingSpace
-    space = extend(space, req.body)
+    if (!req.body.number || !req.body.floor) {
+      return res
+        .status(400)
+        .json("You need to provide both the parking space number and floor")
+    }
+    space = extend(space, { number: req.body.number, floor: req.body.floor })
     await space.save()
     return res.status(200).json({
       id: space.dataValues.id,
       number: space.dataValues.number,
       floor: space.dataValues.floor,
-      available: space.dataValues.available,
-      userId: space.dataValues.userId,
     })
   } catch (err) {
     return res.status(400).json(err)
@@ -79,64 +116,42 @@ const removeParkingSpace = async (req, res) => {
       id: deletedSpace.dataValues.id,
       number: deletedSpace.dataValues.number,
       floor: deletedSpace.dataValues.floor,
-      available: deletedSpace.dataValues.available,
     })
   } catch (err) {
     return res.status(400).json(err)
   }
 }
 
-const updateParkingSpaceByUser = async (req, res) => {
-  try {
-    let space = req.parkingSpace
-    if (
-      !space.dataValues.available &&
-      space.dataValues.UserId !== req.auth.id
-    ) {
-      return res
-        .status(200)
-        .json({ message: "Space is already taken by another user" })
-    }
-    if (req.body.available) {
-      space = extend(space, { available: true, UserId: null })
-    } else {
-      space = extend(space, { available: false, UserId: req.auth.id })
-    }
-
-    await space.save()
-    return res.status(200).json({
-      id: space.dataValues.id,
-      number: space.dataValues.number,
-      floor: space.dataValues.floor,
-      available: space.dataValues.available,
-    })
-  } catch (err) {
-    return res.status(400).json(err)
-  }
-}
-
-const ListFreeSpaces = async (req, res) => {
-  try {
-    let spaces = await Parking.findAll({
-      where: { available: true },
-      attributes: ["number", "floor", "available"],
-    })
-    if (req.body.floor) {
-      spaces = spaces.filter((space) => space.floor === req.body.floor)
-    }
-    return res.status(200).json(spaces)
-  } catch (err) {
-    return res.status(400).json(err)
-  }
+const ListAvailableSpaces = async (req, res) => {
+  let availablespaces = req.allParkingSpaces.filter(
+    (space) => space.available === true
+  )
+  return res.status(200).json(availablespaces)
 }
 
 const retrieveUserSpace = async (req, res) => {
+  const now = new Date()
+  // now = "2021-07-08T02:30:00.000Z"
   try {
-    let user = req.profile
-    const hisParking = await user.getParking({
-      attributes: ["number", "floor"],
+    let userSpace = await Booking.findOne({
+      where: {
+        UserId: req.params.userId,
+        from: { [Op.lt]: now },
+        to: { [Op.gt]: now },
+      },
     })
-    return res.status(200).json(hisParking)
+
+    if (!userSpace) {
+      return res
+        .status(400)
+        .json({ message: "this user doesn't have a parking space" })
+    }
+
+    let parkingSpace = await Parking.findByPk(userSpace.dataValues.ParkingId)
+    return res.status(200).json({
+      number: parkingSpace.dataValues.number,
+      floor: parkingSpace.dataValues.floor,
+    })
   } catch (err) {
     return res.status(400).json(err)
   }
@@ -148,12 +163,8 @@ module.exports = {
   getParkingSpace,
   updateParkingSpace,
   removeParkingSpace,
-  ListFreeSpaces,
+  ListAvailableSpaces,
   retrieveUserSpace,
-  updateParkingSpaceByUser,
   parkingByID,
+  updateParkingSpacesAvailability,
 }
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiYWRtaW4iOmZhbHNlLCJpYXQiOjE2MjU0MjQ3NDZ9.vL9n8_JuvuKAEQ1C5dtQZISIp-KU5tROwXBM2zICnQc
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiYWRtaW4iOnRydWUsImlhdCI6MTYyNTQyMzQwOH0.EaEYIJU4lKwtUg4Q1ou9Y6SqfBSxkTcywadYyd8tH-o

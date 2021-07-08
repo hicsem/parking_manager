@@ -4,14 +4,10 @@ const bcrypt = require("bcrypt")
 const { Model } = require("sequelize")
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
-      User.hasOne(models.Parking)
+      User.hasOne(models.Booking, {
+        onDelete: "cascade",
+      })
     }
   }
   User.init(
@@ -37,11 +33,6 @@ module.exports = (sequelize, DataTypes) => {
           this.setDataValue("password", value)
         },
       },
-      active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-        allowNull: false,
-      },
       admin: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -55,7 +46,9 @@ module.exports = (sequelize, DataTypes) => {
             const salt = await bcrypt.genSaltSync(10, "a")
             user.hashedPassword = bcrypt.hashSync(user.password, salt)
           } else {
-            throw { message: "Password too short" }
+            throw {
+              message: "The password was not provided or it is too short",
+            }
           }
         },
         beforeUpdate: async (user) => {
@@ -64,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
               const salt = await bcrypt.genSaltSync(10, "a")
               user.hashedPassword = bcrypt.hashSync(user.password, salt)
             } else {
-              throw { message: "Password too short" }
+              throw { message: "The password is too short" }
             }
           }
         },
