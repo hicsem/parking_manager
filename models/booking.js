@@ -76,7 +76,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         },
         beforeUpdate: async (booking) => {
-          // ? A booking cannot be updated we should be removed it and create a new one
+          // ? A booking cannot be updated we should remove it and create a new one
         },
       },
       sequelize,
