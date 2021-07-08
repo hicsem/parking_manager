@@ -51,11 +51,11 @@ const bookingById = async (req, res, next, id) => {
 
 const getBooking = async (req, res) => {
   return res.json({
-    id: req.params.bookingId,
+    id: req.booking.dataValues.id,
     from: req.booking.dataValues.from,
     to: req.booking.dataValues.to,
     ParkingId: req.booking.dataValues.ParkingId,
-    UserId: req.params.userId,
+    UserId: req.booking.dataValues.UserId,
   })
 }
 
@@ -64,7 +64,7 @@ const removeBooking = async (req, res) => {
     let booking = req.booking
     let deletedBooking = await booking.destroy()
     return res.status(200).json({
-      id: deletedBooking.dataValues.bookingId,
+      id: deletedBooking.dataValues.id,
       from: deletedBooking.dataValues.from,
       to: deletedBooking.dataValues.to,
       Parking: deletedBooking.dataValues.ParkingId,
