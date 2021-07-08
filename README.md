@@ -51,6 +51,13 @@ NODE_ENV=(ex:development)
 - PUT `/api/parking/:parkingId` (update a parking space)
 - DELETE `/api/parking/:parkingId` (delete a parking space)
 
-- PUT `/api/modifyparking/:parkingId` (update a parking space by the user)
-- GET `/api/freeparking` (returns a list of available parking spaces (if the floor is specified in the body of the request, it returns the list of available spaces in that floor))
+- GET `/api/availableparkingspaces` (returns a list of available parking spaces (if the floor is specified in the body of the request, it returns the list of available spaces in that floor))
 - GET `/api/myparkingspace/:userId` (returns a the user's parking space (where did I park my car?))
+
+#### Bookings
+
+- GET `/api/parking/:parkingId/bookings` (returns a list of bookings of a parking space)
+- POST `/api/parking/:parkingId/bookings` (books a parking space)
+
+- GET `/api/parking/bookings/:bookingId` (return a booking by Id)
+- DELETE `/api/parking/bookings/:bookingId` (delete a booking)
